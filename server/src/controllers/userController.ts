@@ -1,9 +1,13 @@
 import { Request, Response } from "express";
 import bcrypt from "bcrypt";
 import pool from "../models/userModel";
-import exp from "constants";
+import dotenv from "dotenv";
+import jwt from "jsonwebtoken";
+
+dotenv.config();
 
 const saltRounds = 10;
+const jwtSecret = process.env.JWT_SECRET as string;
 
 export const registerUser = async (req: Request, res: Response) => {
 	const { username, password } = req.body;
@@ -58,10 +62,24 @@ export const loginUser = async (req: Request, res: Response) => {
 				.status(401)
 				.json({ success: false, error: "Incorrect username or password" });
 		}
+		const token = jwt.sign(
+			{ id: user.id, username: user.username },
+			jwtSecret,
+			{ expiresIn: "1h" }
+		);
+		res.cookie("token", token, {
+			httpOnly: true,
+			secure: process.env.NODE_ENV === "production",
+		});
 
-		res.status(200).json({ success: true, message: "Login Successful" });
+		res.status(200).json({ success: true, message: "Login Successful", token });
 	} catch (error) {
 		console.error(error);
 		res.status(500).json({ success: false, error: "Internal server error" });
 	}
+};
+
+export const logoutUser = (req: Request, res: Response) => {
+	res.clearCookie("token");
+	res.status(200).json({ success: true, message: "Logout successful" });
 };
