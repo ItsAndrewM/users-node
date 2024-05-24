@@ -1,6 +1,7 @@
 import "./App.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Layout from "./components/ui/layout";
+import { Toaster } from "./components/ui/toaster";
 
 const pages = import.meta.glob<{
 	default: React.ComponentType;
@@ -60,7 +61,12 @@ const router = createBrowserRouter(
 );
 
 function App() {
-	return <RouterProvider router={router} />;
+	return (
+		<>
+			<RouterProvider router={router} />
+			<Toaster />
+		</>
+	);
 }
 
 export default App;
