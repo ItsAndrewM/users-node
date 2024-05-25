@@ -1,8 +1,8 @@
-import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../../lib/hooks/useAuth";
 
 const Navbar = () => {
-	const [signedIn, setSignedIn] = useState(false);
+	const { isAuthenticated } = useAuth();
 	return (
 		<nav className="bg-blue-500 text-white p-4 w-full flex justify-center items-center">
 			<ul className="w-full flex justify-between items-center">
@@ -12,12 +12,16 @@ const Navbar = () => {
 				<li>
 					<Link to="/">Home</Link>
 				</li>
+				{isAuthenticated ? (
+					<li>
+						<Link to="/dashboard">Dashboard</Link>
+					</li>
+				) : null}
 				<li>
-					{signedIn ? (
-						<Link to="/sign-in">Sign-in</Link>
-					) : (
-						<Link to="/sign-up">Sign-up</Link>
-					)}
+					<Link to="/sign-in">Sign-in</Link>
+				</li>
+				<li>
+					<Link to="/sign-up">Sign-up</Link>
 				</li>
 			</ul>
 		</nav>

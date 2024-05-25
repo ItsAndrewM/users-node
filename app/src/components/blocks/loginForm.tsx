@@ -12,8 +12,11 @@ import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { toast } from "../../lib/hooks/use-toast";
 import { Spinner } from "../ui/spinner";
+import { useAuth } from "../../lib/hooks/useAuth";
 
 export function LoginForm() {
+	const { login, isAuthenticated } = useAuth();
+
 	const [loading, setLoading] = useState(false);
 	const [formData, setFormData] = useState({
 		email: "",
@@ -59,6 +62,8 @@ export function LoginForm() {
 			const data = await res.json();
 			console.log(data);
 			if (data.success) {
+				login();
+				console.log(isAuthenticated);
 				toast({
 					title: "Success!",
 					description: "You are now logged in.",

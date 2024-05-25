@@ -2,6 +2,8 @@ import "./App.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import Layout from "./components/ui/layout";
 import { Toaster } from "./components/ui/toaster";
+import { AuthProvider } from "./lib/context/authContext";
+import PrivateRoute from "./components/privateRoute";
 
 const pages = import.meta.glob<{
 	default: React.ComponentType;
@@ -19,6 +21,7 @@ interface RouteConfig {
 }
 
 const routes: RouteConfig[] = [];
+
 for (const path of Object.keys(pages)) {
 	const fileName = path.match(/\.\/pages\/(.*)\.tsx$/)?.[1];
 	if (!fileName) {
@@ -53,7 +56,13 @@ const router = createBrowserRouter(
 		...rest,
 		element: (
 			<Layout>
-				<Element />
+				{rest.path === "/dashboard" ? (
+					<PrivateRoute>
+						<Element />
+					</PrivateRoute>
+				) : (
+					<Element />
+				)}
 			</Layout>
 		),
 		...(ErrorBoundary && { errorElement: <ErrorBoundary /> }),
@@ -62,10 +71,10 @@ const router = createBrowserRouter(
 
 function App() {
 	return (
-		<>
+		<AuthProvider>
 			<RouterProvider router={router} />
 			<Toaster />
-		</>
+		</AuthProvider>
 	);
 }
 
