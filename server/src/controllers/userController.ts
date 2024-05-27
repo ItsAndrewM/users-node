@@ -9,6 +9,24 @@ dotenv.config();
 const saltRounds = 10;
 const jwtSecret = process.env.JWT_SECRET as string;
 
+export const getUser = async (req: Request, res: Response) => {
+	const { id } = req.params;
+	try {
+		const user = await pool.query("SELECT * FROM users_test WHERE id = $1", [
+			id,
+		]);
+		if (!user.rows[0]) {
+			return res.status(404).json({ success: false, error: "User not found" });
+		}
+		res
+			.status(200)
+			.json({ success: true, message: "User found", user: user.rows[0] });
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({ success: false, error: "Internal server error" });
+	}
+};
+
 export const registerUser = async (req: Request, res: Response) => {
 	const { username, email, firstName, lastName, password } = req.body;
 	if (!username || !email || !firstName || !lastName || !password) {
