@@ -115,3 +115,24 @@ export const logoutUser = (req: Request, res: Response) => {
 	res.clearCookie("token");
 	res.status(200).json({ success: true, message: "Logout successful" });
 };
+
+export const getCurrentUser = async (req: Request, res: Response) => {
+	const userId = (req.user as any).id;
+
+	try {
+		const userResult = await pool.query(
+			"SELECT id, username, email, first_name, last_name FROM users_test WHERE id = $1",
+			[userId]
+		);
+		const user = userResult.rows[0];
+
+		if (!user) {
+			return res.status(404).json({ success: false, error: "User not found" });
+		}
+
+		res.status(200).json({ success: true, user });
+	} catch (error) {
+		console.error(error);
+		res.status(500).json({ success: false, error: "Internal server error" });
+	}
+};

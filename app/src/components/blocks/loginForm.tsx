@@ -13,9 +13,11 @@ import { Label } from "../ui/label";
 import { toast } from "../../lib/hooks/use-toast";
 import { Spinner } from "../ui/spinner";
 import { useAuth } from "../../lib/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 export function LoginForm() {
 	const { login, isAuthenticated } = useAuth();
+	const navigate = useNavigate();
 
 	const [loading, setLoading] = useState(false);
 	const [formData, setFormData] = useState({
@@ -54,6 +56,7 @@ export function LoginForm() {
 			setLoading(true);
 			const res = await fetch(`http://localhost:8080/api/user/login`, {
 				method: "POST",
+				credentials: "include",
 				headers: {
 					"Content-Type": "application/json",
 				},
@@ -63,7 +66,6 @@ export function LoginForm() {
 			console.log(data);
 			if (data.success) {
 				login();
-				console.log(isAuthenticated);
 				toast({
 					title: "Success!",
 					description: "You are now logged in.",
@@ -79,6 +81,7 @@ export function LoginForm() {
 					email: "",
 					password: "",
 				});
+				navigate("/dashboard");
 			}
 		} catch (error) {
 			toast({
@@ -131,7 +134,11 @@ export function LoginForm() {
 							<p className="text-red-500">{errors.password}</p>
 						)}
 					</div>
-					<Button className="w-full" type="submit">
+					<Button
+						className="w-full"
+						type="submit"
+						disabled={loading ? true : false}
+					>
 						{loading ? <Spinner className="text-white" /> : "Sign in"}
 					</Button>
 				</form>

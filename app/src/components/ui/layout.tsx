@@ -7,21 +7,20 @@ const Navbar = () => {
 		<nav className="bg-blue-500 text-white p-4 w-full flex justify-center items-center">
 			<ul className="w-full flex justify-between items-center">
 				<li>
-					<Link to="/sign-out">Sign-out</Link>
-				</li>
-				<li>
 					<Link to="/">Home</Link>
 				</li>
-				{isAuthenticated ? (
+				{isAuthenticated ? null : (
 					<li>
-						<Link to="/dashboard">Dashboard</Link>
+						<Link to="/sign-up">Sign-up</Link>
 					</li>
-				) : null}
+				)}
+
 				<li>
-					<Link to="/sign-in">Sign-in</Link>
-				</li>
-				<li>
-					<Link to="/sign-up">Sign-up</Link>
+					{isAuthenticated ? (
+						<Link to="/dashboard">Profile</Link>
+					) : (
+						<Link to="/sign-in">Sign-in</Link>
+					)}
 				</li>
 			</ul>
 		</nav>

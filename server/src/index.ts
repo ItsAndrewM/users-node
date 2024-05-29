@@ -6,8 +6,12 @@ import morgan from "morgan";
 const app = express();
 const port = process.env.PORT || 8080;
 
-app.options("*", cors());
-app.use(cors());
+app.use(
+	cors({
+		origin: "http://localhost:5173", // Replace with your frontend origin
+		credentials: true,
+	})
+);
 
 app.use(morgan("dev"));
 

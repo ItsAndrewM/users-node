@@ -212,7 +212,11 @@ export function SignUp() {
 							<p className="text-red-500">{errors.confirmPassword}</p>
 						)}
 					</div>
-					<Button type="submit" className="w-full">
+					<Button
+						type="submit"
+						className="w-full"
+						disabled={loading ? true : false}
+					>
 						{loading ? <Spinner className="text-white" /> : "Create an account"}
 					</Button>
 				</form>
