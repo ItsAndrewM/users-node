@@ -9,6 +9,7 @@
 		"dev": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/index.ts"
 	},
 	"dependencies": {
+		"@sendgrid/mail": "^8.1.3",
 		"bcrypt": "^5.1.1",
 		"cookie-parser": "^1.4.6",
 		"cors": "^2.8.5",
@@ -29,6 +30,7 @@
 		"@types/jsonwebtoken": "^9.0.6",
 		"@types/morgan": "^1.9.9",
 		"@types/node": "^20.12.12",
-		"@types/pg": "^8.11.6"
+		"@types/pg": "^8.11.6",
+		"@types/sendgrid": "^4.3.0"
 	}
 }
