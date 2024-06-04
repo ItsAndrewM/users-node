@@ -4,7 +4,6 @@ import {
 	Card,
 	CardContent,
 	CardDescription,
-	CardFooter,
 	CardHeader,
 	CardTitle,
 } from "../ui/card";
@@ -14,9 +13,10 @@ import { toast } from "../../lib/hooks/use-toast";
 import { Spinner } from "../ui/spinner";
 import { useAuth } from "../../lib/hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { loginFormSchema } from "@/schemas/userSchema";
 
 export function LoginForm() {
-	const { login, isAuthenticated } = useAuth();
+	const { login } = useAuth();
 	const navigate = useNavigate();
 
 	const [loading, setLoading] = useState(false);
@@ -30,15 +30,6 @@ export function LoginForm() {
 		password: "",
 	});
 
-	const validate = () => {
-		const newErrors = {};
-		if (!formData.email) newErrors.email = "Email is required";
-		else if (!/\S+@\S+\.\S+/.test(formData.email))
-			newErrors.email = "Email is invalid";
-		if (!formData.password) newErrors.password = "Password is required";
-		return newErrors;
-	};
-
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setFormData({ ...formData, [e.target.name]: e.target.value });
 		setErrors({ ...errors, [e.target.name]: "" }); // Clear error on change
@@ -46,9 +37,12 @@ export function LoginForm() {
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		const newErrors = validate();
-		console.log(newErrors);
-		if (Object.keys(newErrors).length > 0) {
+		const result = loginFormSchema.safeParse(formData);
+		if (!result.success) {
+			const newErrors = result.error.errors.reduce((acc, curr) => {
+				acc[curr.path[0]] = curr.message;
+				return acc;
+			}, {});
 			setErrors(newErrors);
 			return;
 		}
@@ -82,6 +76,8 @@ export function LoginForm() {
 					password: "",
 				});
 				navigate("/dashboard");
+			} else {
+				throw new Error(data.error || "Unknown error occurred");
 			}
 		} catch (error) {
 			toast({

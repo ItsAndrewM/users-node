@@ -31,7 +31,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
 	return (
 		<>
 			<Navbar />
-			<main className="w-full mx-auto flex flex-col max-w-3xl ">
+			<main className="w-full mx-auto flex flex-col max-w-screen ">
 				{children}
 			</main>
 		</>

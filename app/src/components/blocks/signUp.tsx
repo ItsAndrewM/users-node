@@ -12,6 +12,8 @@ import { Label } from "../ui/label";
 import { Link } from "react-router-dom";
 import { toast } from "../../lib/hooks/use-toast";
 import { Spinner } from "../ui/spinner";
+import { registerUserFormSchema } from "@/schemas/userSchema";
+import { z } from "zod";
 
 export function SignUp() {
 	const [loading, setLoading] = useState(false);
@@ -33,20 +35,6 @@ export function SignUp() {
 		confirmPassword: "",
 	});
 
-	const validate = () => {
-		const newErrors = {};
-		if (!formData.username) newErrors.username = "Username is required";
-		if (!formData.email) newErrors.email = "Email is required";
-		else if (!/\S+@\S+\.\S+/.test(formData.email))
-			newErrors.email = "Email is invalid";
-		if (!formData.firstName) newErrors.firstName = "First name is required";
-		if (!formData.lastName) newErrors.lastName = "Last name is required";
-		if (!formData.password) newErrors.password = "Password is required";
-		if (formData.password !== formData.confirmPassword)
-			newErrors.confirmPassword = "Passwords do not match";
-		return newErrors;
-	};
-
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setFormData({ ...formData, [e.target.name]: e.target.value });
 		setErrors({ ...errors, [e.target.name]: "" }); // Clear error on change
@@ -54,9 +42,12 @@ export function SignUp() {
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
-		const newErrors = validate();
-		console.log(newErrors);
-		if (Object.keys(newErrors).length > 0) {
+		const result = registerUserFormSchema.safeParse(formData);
+		if (!result.success) {
+			const newErrors = result.error.errors.reduce((acc, curr) => {
+				acc[curr.path[0]] = curr.message;
+				return acc;
+			}, {});
 			setErrors(newErrors);
 			return;
 		}
@@ -70,7 +61,6 @@ export function SignUp() {
 				body: JSON.stringify(formData),
 			});
 			const data = await res.json();
-			console.log(data);
 			if (data.success) {
 				toast({
 					title: "Success!",
@@ -96,20 +86,27 @@ export function SignUp() {
 					confirmPassword: "",
 				});
 			} else {
-				throw new Error(data.message);
+				throw new Error(data.error || "Unknown error occurred");
 			}
 		} catch (error) {
-			toast({
-				title: "Uh oh! Something went wrong.",
-				description: error.message
-					? error.message
-					: "There was a problem with your request.",
-			});
+			if (error instanceof z.ZodError) {
+				const newErrors = error.errors.reduce((acc, curr) => {
+					acc[curr.path[0]] = curr.message;
+					return acc;
+				}, {});
+				console.log(newErrors);
+				setErrors(newErrors);
+			} else {
+				console.log(error.message);
+				toast({
+					title: "Uh oh! Something went wrong.",
+					description: error.message
+						? error.message
+						: "There was a problem with your request.",
+				});
+			}
 			setLoading(false);
-			console.log(error);
 		}
-		console.log(formData);
-		// Proceed with form submission (e.g., make API call)
 	};
 
 	return (
