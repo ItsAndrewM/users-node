@@ -24,8 +24,11 @@ import {
 } from "@/components/ui/pagination";
 import DashboardLayout from "./dashboardLayout";
 import { MoveHorizontalIcon } from "../ui/icons/moveHorizontalIcon";
+import DashboardHeader from "./dashboardHeader";
+import PostModal from "./postModal";
 
 export default function PostsDashboard() {
+	const [showNewPostModal, setShowNewPostModal] = useState(false);
 	const [currentPage, setCurrentPage] = useState(1);
 	const [postsPerPage] = useState(10);
 	const indexOfLastPost = currentPage * postsPerPage;
@@ -85,85 +88,96 @@ export default function PostsDashboard() {
 	const paginate = (pageNumber: SetStateAction<number>) =>
 		setCurrentPage(pageNumber);
 	return (
-		<DashboardLayout>
-			<div className="border shadow-sm rounded-lg p-2">
-				<Table>
-					<TableHeader>
-						<TableRow>
-							<TableHead>Title</TableHead>
-							<TableHead className="hidden md:table-cell">Author</TableHead>
-							<TableHead className="hidden md:table-cell">Published</TableHead>
-							<TableHead className="text-right">Actions</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{currentPosts.map((post, index) => (
-							<TableRow key={index}>
-								<TableCell className="font-medium">{post.title}</TableCell>
-								<TableCell className="hidden md:table-cell">
-									{post.author}
-								</TableCell>
-								<TableCell className="hidden md:table-cell">
-									{post.published}
-								</TableCell>
-								<TableCell className="text-right">
-									<DropdownMenu>
-										<DropdownMenuTrigger asChild>
-											<Button variant="ghost" size="icon">
-												<MoveHorizontalIcon className="w-4 h-4" />
-												<span className="sr-only">Actions</span>
-											</Button>
-										</DropdownMenuTrigger>
-										<DropdownMenuContent align="end">
-											<DropdownMenuItem>View Post</DropdownMenuItem>
-											<DropdownMenuItem>Edit Post</DropdownMenuItem>
-											<DropdownMenuItem>Delete Post</DropdownMenuItem>
-										</DropdownMenuContent>
-									</DropdownMenu>
-								</TableCell>
-							</TableRow>
-						))}
-					</TableBody>
-				</Table>
-				<Pagination>
-					<PaginationContent>
-						<PaginationItem>
-							<PaginationPrevious
-								href="#"
-								onClick={() =>
-									paginate(currentPage > 1 ? currentPage - 1 : currentPage)
-								}
-							/>
-						</PaginationItem>
-						{[...Array(Math.ceil([...currentPosts].length / postsPerPage))].map(
-							(_, index) => (
-								<PaginationItem key={index}>
-									<PaginationLink
+		<>
+			<DashboardLayout>
+				<DashboardHeader setShowNewPostModal={setShowNewPostModal} />
+				<main className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-6">
+					<div className="border shadow-sm rounded-lg p-2">
+						<Table>
+							<TableHeader>
+								<TableRow>
+									<TableHead>Title</TableHead>
+									<TableHead className="hidden md:table-cell">Author</TableHead>
+									<TableHead className="hidden md:table-cell">
+										Published
+									</TableHead>
+									<TableHead className="text-right">Actions</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{currentPosts.map((post, index) => (
+									<TableRow key={index}>
+										<TableCell className="font-medium">{post.title}</TableCell>
+										<TableCell className="hidden md:table-cell">
+											{post.author}
+										</TableCell>
+										<TableCell className="hidden md:table-cell">
+											{post.published}
+										</TableCell>
+										<TableCell className="text-right">
+											<DropdownMenu>
+												<DropdownMenuTrigger asChild>
+													<Button variant="ghost" size="icon">
+														<MoveHorizontalIcon className="w-4 h-4" />
+														<span className="sr-only">Actions</span>
+													</Button>
+												</DropdownMenuTrigger>
+												<DropdownMenuContent align="end">
+													<DropdownMenuItem>View Post</DropdownMenuItem>
+													<DropdownMenuItem>Edit Post</DropdownMenuItem>
+													<DropdownMenuItem>Delete Post</DropdownMenuItem>
+												</DropdownMenuContent>
+											</DropdownMenu>
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+						<Pagination>
+							<PaginationContent>
+								<PaginationItem>
+									<PaginationPrevious
 										href="#"
-										isActive={currentPage === index + 1}
-										onClick={() => paginate(index + 1)}
-									>
-										{index + 1}
-									</PaginationLink>
+										onClick={() =>
+											paginate(currentPage > 1 ? currentPage - 1 : currentPage)
+										}
+									/>
 								</PaginationItem>
-							)
-						)}
-						<PaginationItem>
-							<PaginationNext
-								href="#"
-								onClick={() =>
-									paginate(
-										currentPage <
-											Math.ceil([...currentPosts].length / postsPerPage)
-											? currentPage + 1
-											: currentPage
-									)
-								}
-							/>
-						</PaginationItem>
-					</PaginationContent>
-				</Pagination>
-			</div>
-		</DashboardLayout>
+								{[
+									...Array(Math.ceil([...currentPosts].length / postsPerPage)),
+								].map((_, index) => (
+									<PaginationItem key={index}>
+										<PaginationLink
+											href="#"
+											isActive={currentPage === index + 1}
+											onClick={() => paginate(index + 1)}
+										>
+											{index + 1}
+										</PaginationLink>
+									</PaginationItem>
+								))}
+								<PaginationItem>
+									<PaginationNext
+										href="#"
+										onClick={() =>
+											paginate(
+												currentPage <
+													Math.ceil([...currentPosts].length / postsPerPage)
+													? currentPage + 1
+													: currentPage
+											)
+										}
+									/>
+								</PaginationItem>
+							</PaginationContent>
+						</Pagination>
+					</div>
+				</main>
+			</DashboardLayout>
+			<PostModal
+				showNewPostModal={showNewPostModal}
+				setShowNewPostModal={setShowNewPostModal}
+			/>
+		</>
 	);
 }

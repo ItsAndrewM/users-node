@@ -1,5 +1,6 @@
 import express from "express";
 import userRoutes from "./routes/user";
+import postRoutes from "./routes/posts";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import morgan from "morgan";
@@ -19,6 +20,8 @@ app.use(express.json());
 app.use(cookieParser());
 
 app.use("/api/user", userRoutes);
+
+app.use("/api/posts", postRoutes);
 
 app.get("/", (req, res) => {
 	res.send("Hello, TypeScript with Express!");

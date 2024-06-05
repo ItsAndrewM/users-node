@@ -56,7 +56,10 @@ const router = createBrowserRouter(
 		...rest,
 		element: (
 			<Layout>
-				{rest.path === "/dashboard" ? (
+				{rest.path === "/dashboard" ||
+				rest.path === "/dashboard/authors" ||
+				rest.path === "/dashboard/posts" ||
+				rest.path === "/dashboard/settings" ? (
 					<PrivateRoute>
 						<Element />
 					</PrivateRoute>
