@@ -1,6 +1,7 @@
 import express from "express";
 import userRoutes from "./routes/user";
 import postRoutes from "./routes/posts";
+import authorRoutes from "./routes/author";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import morgan from "morgan";
@@ -15,12 +16,11 @@ app.use(
 );
 
 app.use(morgan("dev"));
-
-app.use(express.json());
 app.use(cookieParser());
+app.use(express.json({ limit: "50mb" }));
 
+app.use("/api/authors", authorRoutes);
 app.use("/api/user", userRoutes);
-
 app.use("/api/posts", postRoutes);
 
 app.get("/", (req, res) => {

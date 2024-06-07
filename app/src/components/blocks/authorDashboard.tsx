@@ -1,5 +1,4 @@
-import { SetStateAction, useState } from "react";
-import { Link } from "react-router-dom";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +32,20 @@ import AuthorHeader from "./authorHeader";
 import DashboardLayout from "./dashboardLayout";
 import { toast } from "@/lib/hooks/use-toast";
 import { Spinner } from "../ui/spinner";
+import {
+	Form,
+	FormControl,
+	FormDescription,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@/components/ui/form";
+import { addAuthorFormSchema } from "@/schemas/userSchema";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { createAuthor } from "@/lib/utils/index";
 
 interface Author {
 	name: string;
@@ -49,6 +62,18 @@ export default function AuthorDashboard() {
 	const [deleteAuthorModal, setDeleteAuthorModal] = useState(false);
 	const [deleteAuthor, setDeleteAuthor] = useState(null);
 	const [loading, setLoading] = useState(false);
+	const [formData, setFormData] = useState({
+		firstName: "",
+		lastName: "",
+		avatar: "",
+		bio: "",
+	});
+	const [errors, setErrors] = useState({
+		firstName: "",
+		lastName: "",
+		avatar: "",
+		bio: "",
+	});
 
 	const authors = [
 		{
@@ -117,6 +142,40 @@ export default function AuthorDashboard() {
 		setDeleteAuthorModal(true);
 	};
 
+	const handleAddAuthorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setFormData({ ...formData, [e.target.name]: e.target.value });
+		setErrors({ ...errors, [e.target.name]: "" }); // Clear error on change
+	};
+
+	// const handleAddAuthor = async (e: React.FormEvent<HTMLFormElement>) => {
+	// 	e.preventDefault();
+	// 	const result = await createAuthor({
+	// 		firstName: formData.firstName,
+	// 		lastName: formData.lastName,
+	// 		avatarPhoto: formData.avatar,
+	// 		bio: formData.bio,
+	// 	});
+	// 	console.log(result);
+	// 	if (result.success) {
+	// 		toast({
+	// 			title: "Success!",
+	// 			description: "Author added successfully.",
+	// 		});
+	// 		setShowAddAuthorModal(false);
+	// 		setFormData({
+	// 			firstName: "",
+	// 			lastName: "",
+	// 			avatar: "",
+	// 			bio: "",
+	// 		});
+	// 	} else {
+	// 		toast({
+	// 			title: "Error!",
+	// 			description: "An error occurred while adding the author.",
+	// 		});
+	// 	}
+	// };
+
 	const confirmDeleteAuthor = async (e) => {
 		e.preventDefault();
 		try {
@@ -136,6 +195,57 @@ export default function AuthorDashboard() {
 			});
 		}
 	};
+
+	const form = useForm<z.infer<typeof addAuthorFormSchema>>({
+		resolver: zodResolver(addAuthorFormSchema),
+	});
+
+	async function onSubmit(data: z.infer<typeof addAuthorFormSchema>) {
+		// console.log(data);
+		setLoading(true);
+		// await new Promise((r) => setTimeout(r, 2000));
+		// toast({
+		// 	title: "You submitted the following values:",
+		// 	description: (
+		// 		<pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+		// 			<code className="text-white">{JSON.stringify(data, null, 2)}</code>
+		// 		</pre>
+		// 	),
+		// });
+		// form.reset({
+		// 	firstName: "",
+		// 	lastName: "",
+		// 	avatarPhoto: "",
+		// 	bio: "",
+		// });
+		const result = await createAuthor({
+			firstName: data.firstName,
+			lastName: data.lastName,
+			avatarPhoto: data.avatarPhoto,
+			bio: data.bio,
+		});
+		console.log(result);
+		if (result.success) {
+			toast({
+				title: "Success!",
+				description: "Author added successfully.",
+			});
+			setShowAddAuthorModal(false);
+			form.reset({
+				firstName: "",
+				lastName: "",
+				avatarPhoto: "",
+				bio: "",
+			});
+		} else {
+			toast({
+				title: "Error!",
+				description: "An error occurred while adding the author.",
+			});
+		}
+		setLoading(false);
+	}
+
 	return (
 		<>
 			{" "}
@@ -231,41 +341,139 @@ export default function AuthorDashboard() {
 			// Add Author Modal
 			<Dialog open={showAddAuthorModal} onOpenChange={setShowAddAuthorModal}>
 				<DialogContent className="sm:max-w-[425px]">
-					<DialogHeader>
-						<DialogTitle>Add Author</DialogTitle>
-						<DialogDescription>
-							Fill in the details to add a new author.
-						</DialogDescription>
-					</DialogHeader>
-					<div className="grid gap-4 py-4">
-						<div className="grid items-center grid-cols-4 gap-4">
-							<Label htmlFor="name" className="text-right">
-								Name
-							</Label>
-							<Input id="name" className="col-span-3" />
-						</div>
-						<div className="grid items-center grid-cols-4 gap-4">
-							<Label htmlFor="bio" className="text-right">
-								Bio
-							</Label>
-							<Textarea id="bio" className="col-span-3" />
-						</div>
-						<div className="grid items-center grid-cols-4 gap-4">
-							<Label htmlFor="avatar" className="text-right">
-								Avatar
-							</Label>
-							<Input id="avatar" type="file" className="col-span-3" />
+					<div className="flex flex-col gap-4">
+						<DialogHeader>
+							<DialogTitle>Add Author</DialogTitle>
+							<DialogDescription>
+								Fill in the details to add a new author.
+							</DialogDescription>
+						</DialogHeader>
+						<div className="grid gap-4 py-4">
+							<Form {...form}>
+								<form
+									className="grid gap-4 py-4"
+									onSubmit={form.handleSubmit(onSubmit)}
+								>
+									<FormField
+										control={form.control}
+										name="firstName"
+										render={({ field }) => (
+											<FormItem className="flex flex-col items-center gap-1 w-full">
+												<div className="grid items-center grid-cols-4 gap-4 w-full">
+													<FormLabel
+														htmlFor="first-name"
+														className="text-right"
+													>
+														First name
+													</FormLabel>
+													<FormControl>
+														<Input
+															id="first-name"
+															placeholder="Max"
+															{...field}
+															className="col-span-3"
+														/>
+													</FormControl>
+												</div>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="lastName"
+										render={({ field }) => (
+											<FormItem className="flex flex-col items-center gap-1 w-full">
+												<div className="grid items-center grid-cols-4 gap-4 w-full">
+													<FormLabel htmlFor="last-name" className="text-right">
+														Last name
+													</FormLabel>
+													<FormControl>
+														<Input
+															id="last-name"
+															placeholder="Powers"
+															{...field}
+															className="col-span-3"
+														/>
+													</FormControl>
+												</div>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="bio"
+										render={({ field }) => (
+											<FormItem className="flex flex-col items-center gap-1 w-full">
+												<div className="grid items-center grid-cols-4 gap-4 w-full">
+													<FormLabel htmlFor="bio" className="text-right">
+														Bio
+													</FormLabel>
+													<FormControl>
+														<Textarea
+															id="bio"
+															{...field}
+															className="col-span-3"
+														/>
+													</FormControl>
+												</div>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									<FormField
+										control={form.control}
+										name="avatarPhoto"
+										render={({ field }) => (
+											<FormItem className="flex flex-col items-center gap-1 w-full">
+												<div className="grid items-center grid-cols-4 gap-4 w-full">
+													<FormLabel htmlFor="avatar" className="text-right">
+														Avatar
+													</FormLabel>
+													<FormControl>
+														<Input
+															id="avatar"
+															onChange={(e) => {
+																field.onChange(e.target.files?.[0]);
+															}}
+															type="file"
+															className="col-span-3"
+															accept="image/*"
+														/>
+													</FormControl>
+												</div>
+												<FormMessage />
+											</FormItem>
+										)}
+									/>
+									{/* <Label htmlFor="name" className="text-right">
+									Name
+								</Label>
+								<Input
+									id="name"
+									className="col-span-3"
+									onChange={handleAddAuthorChange}
+								/> */}
+									<DialogFooter>
+										<Button type="submit">
+											{loading ? (
+												<Spinner className="text-white" />
+											) : (
+												"Add Author"
+											)}
+										</Button>
+										<Button
+											variant="outline"
+											onClick={() => setShowAddAuthorModal(false)}
+										>
+											Cancel
+										</Button>
+									</DialogFooter>
+								</form>
+							</Form>
 						</div>
 					</div>
-					<DialogFooter>
-						<Button type="submit">Add Author</Button>
-						<Button
-							variant="outline"
-							onClick={() => setShowAddAuthorModal(false)}
-						>
-							Cancel
-						</Button>
-					</DialogFooter>
 				</DialogContent>
 			</Dialog>
 			// Edit Author Modal

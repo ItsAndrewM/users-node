@@ -6,10 +6,15 @@ import upload from "../middleware/upload";
 export const createPost = async (req: Request, res: Response) => {
 	upload.single("coverPhoto")(req, res, async (err) => {
 		if (err) {
-			return res.status(500).json({ error: "Error uploading file" });
+			return res
+				.status(500)
+				.json({ success: false, error: "Error uploading file" });
 		}
 
 		const { title, content, authorId, published, tags } = req.body;
+		if (!title || !content || !authorId || !published || !tags) {
+			return res.status(400).json({ success: false, error: "Invalid request" });
+		}
 		const coverPhotoUrl = (req.file as Express.MulterS3.File)?.location; // The URL of the uploaded file
 
 		// Ensure tags are formatted correctly as a PostgreSQL array literal
@@ -27,7 +32,7 @@ export const createPost = async (req: Request, res: Response) => {
 			res.status(201).json(newPost.rows[0]);
 		} catch (error) {
 			console.error(error);
-			res.status(500).json({ error: "Internal server error" });
+			res.status(500).json({ success: false, error: "Internal server error" });
 		}
 	});
 };

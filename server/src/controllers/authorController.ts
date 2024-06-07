@@ -1,21 +1,43 @@
 import { Request, Response } from "express";
+import upload from "../middleware/upload";
 import pool from "../models/userModel";
 
 // Create a new author
 export const createAuthor = async (req: Request, res: Response) => {
-	const { firstName, lastName, avatarUrl, bio } = req.body;
+	upload.single("avatarPhoto")(req, res, async (err) => {
+		if (err) {
+			return res
+				.status(500)
+				.json({ success: false, error: "Error uploading file" });
+		}
+		const avatarUrl = (req.file as Express.MulterS3.File)?.location;
+		if (!avatarUrl) {
+			return res
+				.status(500)
+				.json({ success: false, error: "Missing avatar file" });
+		}
+		const { firstName, lastName, bio } = req.body;
+		if (!firstName || !lastName || !bio) {
+			return res
+				.status(400)
+				.json({ success: false, error: "Missing required fields" });
+		}
+		try {
+			const newAuthor = await pool.query(
+				"INSERT INTO authors (first_name, last_name, avatar_url, bio) VALUES ($1, $2, $3, $4) RETURNING *",
+				[firstName, lastName, avatarUrl, bio]
+			);
 
-	try {
-		const newAuthor = await pool.query(
-			"INSERT INTO authors (first_name, last_name, avatar_url, bio) VALUES ($1, $2, $3, $4) RETURNING *",
-			[firstName, lastName, avatarUrl, bio]
-		);
-
-		res.status(201).json(newAuthor.rows[0]);
-	} catch (error) {
-		console.error(error);
-		res.status(500).json({ error: "Internal server error" });
-	}
+			res.status(201).json({
+				success: true,
+				message: "Author created successfully",
+				author: newAuthor.rows[0],
+			});
+		} catch (error) {
+			console.error(error);
+			res.status(500).json({ success: false, error: "Internal server error" });
+		}
+	});
 };
 
 // Get all authors

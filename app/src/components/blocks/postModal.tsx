@@ -10,6 +10,7 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
+import TagAdder from "./tagAdder";
 
 const PostModal = ({
 	showNewPostModal,
@@ -43,6 +44,10 @@ const PostModal = ({
 					<div className="space-y-2">
 						<Label htmlFor="author">Author</Label>
 						<Input id="author" placeholder="Enter author name" />
+					</div>
+					<div className="space-y-2">
+						<Label htmlFor="tags">Tags</Label>
+						<TagAdder />
 					</div>
 					<div className="space-y-2">
 						<Label htmlFor="publish-date">Publish Date</Label>
