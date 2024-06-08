@@ -45,7 +45,13 @@ export const getAllAuthors = async (req: Request, res: Response) => {
 	try {
 		const authors = await pool.query("SELECT * FROM authors");
 
-		res.status(200).json(authors.rows);
+		res
+			.status(200)
+			.json({
+				success: true,
+				message: "Authors fetched successfully",
+				authors: authors.rows,
+			});
 	} catch (error) {
 		console.error(error);
 		res.status(500).json({ error: "Internal server error" });
