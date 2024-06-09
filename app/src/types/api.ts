@@ -1,4 +1,7 @@
+import { UseFormReturn } from "react-hook-form";
+
 export interface Author {
+	id: number;
 	first_name: string;
 	last_name: string;
 	bio: string;
@@ -16,3 +19,12 @@ export interface Post {
 	createdAt: string;
 	updatedAt: string;
 }
+
+export interface AuthorFormValues {
+	firstName: string;
+	lastName: string;
+	bio: string;
+	avatarPhoto: File;
+}
+
+export type FormHook = UseFormReturn<AuthorFormValues>;

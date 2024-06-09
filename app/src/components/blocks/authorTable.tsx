@@ -72,8 +72,8 @@ export default function AuthorTable({
 					{loading ? (
 						<SkeletonTable />
 					) : (
-						authors.map((author: Author, index: number) => (
-							<TableRow key={index}>
+						authors.map((author: Author) => (
+							<TableRow key={author.id}>
 								<TableCell className="flex items-center gap-2">
 									<Avatar className="w-8 h-8">
 										<img

@@ -29,9 +29,32 @@ import DashboardLayout from "./dashboardLayout";
 import DashboardHeader from "./dashboardHeader";
 import { useState } from "react";
 import PostModal from "./postModal";
+import {
+	Form,
+	FormControl,
+	FormDescription,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "../ui/form";
+import { useReactForm } from "@/lib/hooks/useReactForm";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "../ui/select";
+import { Link } from "react-router-dom";
+import useFetchAuthors from "@/lib/hooks/useFetchAllAuthors";
+import { Skeleton } from "../ui/skeleton";
+import { Author } from "@/types";
 
 const BlogDashboard = () => {
-	const [showNewPostModal, setShowNewPostModal] = useState(false);
+	const [showNewPostModal, setShowNewPostModal] = useState<boolean>(false);
+	const form = useReactForm();
+	const { authors, loading, error } = useFetchAuthors();
 	return (
 		<>
 			<DashboardLayout>
@@ -166,34 +189,73 @@ const BlogDashboard = () => {
 								</CardDescription>
 							</CardHeader>
 							<CardContent className="space-y-4">
-								<div className="space-y-2">
-									<Label htmlFor="title">Title</Label>
-									<Input id="title" placeholder="Enter post title" />
-								</div>
-								<div className="space-y-2">
-									<Label htmlFor="cover-photo">Cover Photo</Label>
-									<Input id="cover-photo" type="file" accept="image/*" />
-								</div>
-								<div className="space-y-2">
-									<Label htmlFor="content">Content</Label>
-									<Textarea
-										id="content"
-										placeholder="Enter post content"
-										rows={5}
-									/>
-								</div>
-								<div className="space-y-2">
-									<Label htmlFor="author">Author</Label>
-									<Input id="author" placeholder="Enter author name" />
-								</div>
-								<div className="space-y-2">
-									<Label htmlFor="publish-date">Publish Date</Label>
-									<Input
-										id="publish-date"
-										type="date"
-										placeholder="Select publish date"
-									/>
-								</div>
+								<Form {...form}>
+									<form>
+										<div className="space-y-2">
+											<Label htmlFor="title">Title</Label>
+											<Input id="title" placeholder="Enter post title" />
+										</div>
+										<div className="space-y-2">
+											<Label htmlFor="cover-photo">Cover Photo</Label>
+											<Input id="cover-photo" type="file" accept="image/*" />
+										</div>
+										<div className="space-y-2">
+											<Label htmlFor="content">Content</Label>
+											<Textarea
+												id="content"
+												placeholder="Enter post content"
+												rows={5}
+											/>
+										</div>
+										<div className="space-y-2">
+											<FormField
+												control={form.control}
+												name="author"
+												render={({ field }) => (
+													<FormItem>
+														<FormLabel>Author</FormLabel>
+														<Select
+															onValueChange={field.onChange}
+															defaultValue={field.value}
+														>
+															<FormControl>
+																<SelectTrigger>
+																	<SelectValue placeholder="Select an author to display" />
+																</SelectTrigger>
+															</FormControl>
+															<SelectContent>
+																{loading ? (
+																	<SelectItem value="loading">
+																		<Skeleton className="h-4 w-[100px]" />
+																	</SelectItem>
+																) : (
+																	authors.map((author: Author) => (
+																		<SelectItem
+																			key={author.id}
+																			value={author.id.toString()}
+																			className="capitalize"
+																		>
+																			{`${author.first_name} ${author.last_name}`}
+																		</SelectItem>
+																	))
+																)}
+															</SelectContent>
+														</Select>
+														<FormMessage />
+													</FormItem>
+												)}
+											/>
+										</div>
+										<div className="space-y-2">
+											<Label htmlFor="publish-date">Publish Date</Label>
+											<Input
+												id="publish-date"
+												type="date"
+												placeholder="Select publish date"
+											/>
+										</div>
+									</form>
+								</Form>
 							</CardContent>
 							<CardFooter>
 								<Button>Create Post</Button>

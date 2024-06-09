@@ -11,15 +11,23 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { DialogFooter } from "../ui/dialog";
+import { AuthorFormValues, FormHook } from "@/types/api";
+
+interface AuthorFormProps {
+	onSubmit: (data: AuthorFormValues) => Promise<void>;
+	formHook: FormHook;
+	setCloseModal: (value: boolean) => void;
+	loading: boolean;
+	buttonText: string;
+}
 
 export function AuthorForm({
 	onSubmit,
 	formHook,
 	setCloseModal,
 	loading,
-	selectedAuthor,
-}) {
-	console.log(selectedAuthor);
+	buttonText,
+}: AuthorFormProps) {
 	return (
 		<div className="grid gap-4 py-4">
 			<Form {...formHook}>
@@ -42,7 +50,6 @@ export function AuthorForm({
 											placeholder="Max"
 											{...field}
 											className="col-span-3"
-											value={selectedAuthor?.first_name}
 										/>
 									</FormControl>
 								</div>
@@ -65,7 +72,6 @@ export function AuthorForm({
 											placeholder="Powers"
 											{...field}
 											className="col-span-3"
-											value={selectedAuthor?.last_name}
 										/>
 									</FormControl>
 								</div>
@@ -83,12 +89,7 @@ export function AuthorForm({
 										Bio
 									</FormLabel>
 									<FormControl>
-										<Textarea
-											id="bio"
-											{...field}
-											className="col-span-3"
-											value={selectedAuthor?.bio}
-										/>
+										<Textarea id="bio" {...field} className="col-span-3" />
 									</FormControl>
 								</div>
 								<FormMessage />
@@ -130,7 +131,7 @@ export function AuthorForm({
 								/> */}
 					<DialogFooter>
 						<Button type="submit">
-							{loading ? <Spinner className="text-white" /> : "Add Author"}
+							{loading ? <Spinner className="text-white" /> : buttonText}
 						</Button>
 						<Button variant="outline" onClick={() => setCloseModal(false)}>
 							Cancel

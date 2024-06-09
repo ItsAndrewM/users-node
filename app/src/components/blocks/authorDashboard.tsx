@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -11,26 +10,19 @@ import {
 	DialogDescription,
 	DialogFooter,
 } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 
 import AuthorHeader from "./authorHeader";
 import DashboardLayout from "./dashboardLayout";
 import { toast } from "@/lib/hooks/use-toast";
 import { Spinner } from "../ui/spinner";
-import {
-	Form,
-	FormControl,
-	FormField,
-	FormItem,
-	FormLabel,
-	FormMessage,
-} from "@/components/ui/form";
+
 import { addAuthorFormSchema } from "@/schemas/userSchema";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { createAuthor } from "@/lib/utils/index";
+import {
+	createAuthor,
+	deleteSelectedAuthor,
+	updateAuthor,
+} from "@/lib/utils/index";
 import AuthorTable from "./authorTable";
 import { Author } from "@/types/api";
 import { useReactForm } from "@/lib/hooks/useReactForm";
@@ -47,11 +39,14 @@ export default function AuthorDashboard() {
 	const [loading, setLoading] = useState(false);
 	const form = useReactForm();
 
-	const confirmDeleteAuthor = async (e) => {
+	const confirmDeleteAuthor = async (e: { preventDefault: () => void }) => {
 		e.preventDefault();
 		try {
 			setLoading(true);
-			await new Promise((r) => setTimeout(r, 2000));
+			const result = await deleteSelectedAuthor(deleteAuthor.id);
+			if (!result.success) {
+				throw new Error(result.error);
+			}
 			setDeleteAuthorModal(false);
 			toast({
 				title: "Success!",
@@ -64,6 +59,8 @@ export default function AuthorDashboard() {
 				title: "Error!",
 				description: "An error occurred while deleting the author.",
 			});
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -92,6 +89,37 @@ export default function AuthorDashboard() {
 			toast({
 				title: "Error!",
 				description: "An error occurred while adding the author.",
+			});
+		}
+		setLoading(false);
+	}
+
+	async function onEditSubmit(data: z.infer<typeof addAuthorFormSchema>) {
+		setLoading(true);
+		const result = await updateAuthor({
+			id: editAuthor.id,
+			firstName: data.firstName,
+			lastName: data.lastName,
+			avatarPhoto: data.avatarPhoto,
+			bio: data.bio,
+		});
+		console.log(result);
+		if (result.success) {
+			toast({
+				title: "Success!",
+				description: "Author updated successfully.",
+			});
+			setEditAuthorModal(false);
+			form.reset({
+				firstName: "",
+				lastName: "",
+				avatarPhoto: "",
+				bio: "",
+			});
+		} else {
+			toast({
+				title: "Error!",
+				description: "An error occurred while updating the author.",
 			});
 		}
 		setLoading(false);
@@ -167,6 +195,7 @@ export default function AuthorDashboard() {
 							formHook={form}
 							setCloseModal={setShowAddAuthorModal}
 							loading={loading}
+							buttonText="Add Author"
 						/>
 					</div>
 				</DialogContent>
@@ -181,11 +210,12 @@ export default function AuthorDashboard() {
 						</DialogDescription>
 					</DialogHeader>
 					<AuthorForm
-						onSubmit={onSubmit}
+						onSubmit={onEditSubmit}
 						formHook={form}
 						setCloseModal={setEditAuthorModal}
 						loading={loading}
-						selectedAuthor={selectedAuthor}
+						selectedAuthor={editAuthor}
+						buttonText="Update Author"
 					/>
 				</DialogContent>
 			</Dialog>
@@ -202,11 +232,13 @@ export default function AuthorDashboard() {
 					{deleteAuthor && (
 						<div className="flex flex-col items-center gap-4">
 							<Avatar className="h-24 w-24">
-								<img src="/placeholder.svg" alt={deleteAuthor.name} />
-								<AvatarFallback>{deleteAuthor.name.charAt(0)}</AvatarFallback>
+								<img src="/placeholder.svg" alt={deleteAuthor.first_name} />
+								<AvatarFallback>
+									{deleteAuthor.first_name.charAt(0)}
+								</AvatarFallback>
 							</Avatar>
 							<div className="grid gap-1">
-								<h3 className="text-lg font-semibold">{deleteAuthor.name}</h3>
+								<h3 className="text-lg font-semibold">{`${deleteAuthor.first_name} ${deleteAuthor.last_name}`}</h3>
 								<p className="text-gray-500 dark:text-gray-400">
 									{deleteAuthor.bio}
 								</p>
